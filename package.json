@@ -1,0 +1,19 @@
+{
+  "name": "twitter-service",
+  "version": "0.0.0",
+  "description": "Service worker for Twitter API, using websockets",
+  "main": "index.js",
+  "dependencies": {
+    "express": "~4.13.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ollie-H/twitter-service"
+  },
+  "author": "Ollie Husband",
+  "license": "BSD"
+}
