@@ -1,8 +1,8 @@
 export {
   twitter: {
-    API_KEY: '',
-    API_SECRET: '',
+    CONSUMER_KEY: '',
+    CONSUMER_SECRET: '',
     ACCESS_TOKEN: '',
-    SECRET_KEY: ' '
+    ACCESS_TOKEN_SECRET: ''
   }
 }

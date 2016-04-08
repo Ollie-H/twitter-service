@@ -11,9 +11,14 @@
     "babel-preset-react": "^6.5.0",
     "babel-preset-stage-0": "^6.5.0",
     "babel-register": "^6.7.2",
-    "express": "^4.13.4"
+    "express": "^4.13.4",
+    "oauth-1.0a": "^1.0.1",
+    "oauth-request": "0.0.1",
+    "request-promise": "^2.0.1",
+    "ws": "^1.0.1"
   },
   "devDependencies": {
+    "mongodb": "^2.1.16",
     "nodemon": "^1.9.1"
   },
   "scripts": {

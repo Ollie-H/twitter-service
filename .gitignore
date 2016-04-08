@@ -2,3 +2,4 @@ node_modules/*
 .sass_cache/*
 .DS_STORE
 src/config/keys.js
+npm-debug.log

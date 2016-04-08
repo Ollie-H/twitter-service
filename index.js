@@ -8,4 +8,4 @@
 require('babel-register');
 
 // Run Application
-require('./src/main');
+require('./example/main');
