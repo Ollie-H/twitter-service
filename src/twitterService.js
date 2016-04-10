@@ -4,11 +4,13 @@
  */
 
 import OAuth from 'oauth-request';
+import Request from 'request-promise';
 import url from 'url';
 import {MongoClient} from 'mongodb';
 import {Server as WebSocketServer} from 'ws';
 import {KEYS} from './config/keys';
 
+const alchameyUrl = `http://gateway-a.watsonplatform.net/calls/text/TextGetTextSentiment?apikey=${KEYS.alchemy.API_KEY}&text=$&outputMode=json`;
 const mongoUrl = 'mongodb://localhost:27017/tweets';
 const defaultOptions = {
   url: 'https://api.twitter.com/1.1/search/tweets.json',
@@ -22,21 +24,29 @@ const defaultOptions = {
 export class TwitterService {
 
   constructor(server, options = {}) {
-    this.wss = new WebSocketServer({ server: server });
     this.options = Object.assign(defaultOptions, options);
+    this.setupSockets(server);
     this.setupDB();
     this.setupPolling();
-    this.setupEvents();
+  }
+
+  setupSockets(server) {
+
+    this.wss = new WebSocketServer({ server: server });
+    this.wss.on('connection', (ws) => {
+      console.log('Sockets connection established');
+      this.ws = ws;
+    });
+
   }
 
   setupDB() {
-    MongoClient.connect(mongoUrl), (err, db) => {
+
+    MongoClient.connect(mongoUrl, (err, db) => {
       console.log('Mongodb running');
-      let collection = db.get('userlist');
-      this.addTweets = (tweets, callback) => {
-        return collection.insertMany(tweets, callback);
-      }
-    };
+      this.db = db.collection('tweets');
+    });
+
   }
 
   setupPolling() {
@@ -55,35 +65,91 @@ export class TwitterService {
       secret: KEYS.twitter.ACCESS_TOKEN_SECRET
     });
 
-    setInterval(() => {
-
-      console.log(Object.assign({}, {...options}));
-      oAuth.get(Object.assign({}, {...options}), (err, res, data) => {
-        // console.log(data);
-        if (!data.statuses || data.statuses.length === 0) {
-          return;
-        }
-        let tweets = data.statuses.forEach((tweet) => {
-          this.syncTweet({
-            id: tweet.id,
-            text: tweet.text
-          });
-        });
-      });
-
-    }, 15000);
-
+    this.getTweets(oAuth);
 
   } 
 
-  setupEvents() {
-    this.wss.on('connection', (ws) => {
-      console.log('Sockets connection established');
-      this.syncTweet = (tweet) => {
-        console.log(tweet);
-        ws.send(tweet.text);
-      }
-    });
+  getTweets(oAuth, sinceId, timeout = 15000) {
     
+    let options = this.options;
+
+    if (sinceId) {
+      options.qs.since_id = sinceId;
+    }
+
+    setTimeout(() => {
+
+      oAuth.get(Object.assign({}, {...options}), (err, res, data) => {
+
+        if (!data || !data.statuses || data.statuses.length === 0) {
+          if (data.errors && data.errors.code === 88) {
+            console.log('Rate limite exceded, waiting....');
+            this.getTweets(oAuth, sinceId, 1000 * 60);
+            return;
+          }
+          console.log('Tweet error', data);
+          this.getTweets(oAuth);
+          return;
+        }
+
+        // Loop through tweets and do some stuffs
+        data.statuses.forEach((tweet) => {
+          this.processTweet(tweet)
+        });
+
+        // Re-call getTweets with ID of last status
+        this.getTweets(oAuth,
+          data.statuses[data.statuses.length-1].id);
+
+      });
+
+    }, timeout);
+
   }
+
+  getCandidate(tweet) {
+
+    console.log(tweet.match(/(clinton|sanders|cruz|kasich|trump)/igm));
+    return tweet.match(/(clinton|sanders|cruz|kasich|trump)/igm);
+
+  }
+
+  processTweet(tweet) {
+
+    Request(alchameyUrl.replace('$', encodeURIComponent(tweet.text)))
+      .then((sentiment) => {
+
+        sentiment = JSON.parse(sentiment);
+        console.log(tweet.text, sentiment.docSentiment);
+
+        let tweetData = {
+          _id: tweet.id,
+          text: tweet.text,
+          candidate: this.getCandidate(tweet.text.toLowerCase()),
+          sentiment: (sentiment.docSentiment) ?
+            sentiment.docSentiment.type : 'neutral',
+          user: {
+            name: tweet.user ? tweet.user.name : null,
+            location: tweet.user ? tweet.user.location : null
+          }
+        }
+
+        if (this.ws) {
+          this.ws.send(tweet.text);
+        }
+
+        try {
+          this.db.insertOne(tweetData)
+            .then((success) => {
+              console.log('Successfully added');
+            });
+        }
+        catch(e) {
+          console.log(e);
+        }
+
+    });
+
+  }
+
 }
