@@ -3,10 +3,12 @@
  * @author Ollie Husband
  */
 
+import EventEmitter from 'events';
 import OAuth from 'oauth-request';
 import request from 'request-promise';
 import { Server as WebSocketServer } from 'ws';
 
+const eventEmitter = new EventEmitter();
 const defaultOptions = {
   url: 'https://api.twitter.com/1.1/search/tweets.json',
   json: true,
@@ -79,7 +81,7 @@ export class TwitterService {
       }
       oAuth.get(Object.assign({}, { ...options }), (err, res, data) => {
         if (!data || !data.statuses || data.statuses.length === 0) {
-          if (data.errors && data.errors.code === 88) {
+          if (data && data.errors && data.errors.code === 88) {
             // Rate limite exceded, waiting....
             this.getTweets(oAuth, sinceId, 1000 * 60);
             return;
@@ -110,9 +112,14 @@ export class TwitterService {
             { sentiment: (sentiment.docSentiment) ?
               sentiment.docSentiment.type : 'neutral' });
           this.ws.send(JSON.stringify(tweetData));
+        })
+        .catch((err) => {
+          console.log(err);
         });
       return;
     }
+    console.log(tweetData);
+    eventEmitter.emit('getTweets', tweetData);
     this.ws.send(JSON.stringify(tweetData));
   }
 
