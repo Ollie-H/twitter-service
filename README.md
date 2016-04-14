@@ -17,7 +17,6 @@ $ git clone --branch=master --depth=1 https://github.com/Ollie-H/twitter-service
 $ cd twitter-service
 ```
 ```
-```
 $ rm -rf /.git
 ```
 ```
