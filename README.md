@@ -11,10 +11,14 @@ API service for Twitter API, using sentiment analysis and websockets
 
 ## Installation
 ```
-$ git clone https://github.com/Ollie-H/twitter-service.git
+$ git clone --branch=master --depth=1 https://github.com/Ollie-H/twitter-service.git
 ```
 ```
 $ cd twitter-service
+```
+```
+```
+$ rm -rf /.git
 ```
 ```
 $ nvm use

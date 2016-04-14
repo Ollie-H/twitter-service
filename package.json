@@ -1,6 +1,6 @@
 {
   "name": "twitter-service",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Service worker for Twitter API, using websockets",
   "main": "index.js",
   "dependencies": {
@@ -23,7 +23,6 @@
     "eslint-config-airbnb": "^7.0.0",
     "eslint-plugin-jsx-a11y": "^0.6.2",
     "eslint-plugin-react": "^4.3.0",
-    "mongodb": "^2.1.16",
     "nodemon": "^1.9.1"
   },
   "scripts": {
