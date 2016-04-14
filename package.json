@@ -18,12 +18,17 @@
     "ws": "^1.0.1"
   },
   "devDependencies": {
+    "babel-eslint": "^6.0.2",
+    "eslint": "^2.7.0",
+    "eslint-config-airbnb": "^7.0.0",
+    "eslint-plugin-jsx-a11y": "^0.6.2",
+    "eslint-plugin-react": "^4.3.0",
     "mongodb": "^2.1.16",
     "nodemon": "^1.9.1"
   },
   "scripts": {
     "start": "./node_modules/.bin/nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "./node_modules/.bin/eslint ./src/twitterService.js"
   },
   "repository": {
     "type": "git",

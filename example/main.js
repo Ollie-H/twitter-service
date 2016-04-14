@@ -16,6 +16,7 @@ console.log("http server listening on %d", port);
 
 const twitterService = new TwitterService(server, {
   url: 'https://api.twitter.com/1.1/search/tweets.json',
+  useSentimentAnalysis: true,
   method: 'GET',
   json: true,
   qs: {
